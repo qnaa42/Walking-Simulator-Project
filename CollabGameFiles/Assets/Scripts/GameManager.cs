@@ -8,8 +8,19 @@ namespace Assets.Scripts
     
     public class GameManager : BaseGameManager
     {
+        public GameObject cameraReferencePoint;
+
+        public GameObject player;
+        public GameObject enviorment;
+
         public UserStatsManager userManager;
         public BaseUserManager baseUserManager;
+        public UiManager uiManager;
+        public Inventory inventory;
+
+        //ToRefactor !!!!!!!!!
+        public PickUp pickupScript;
+        //ToRefactor!!!!!!!
         //Singleton Pattern - cou can acces game manager from anywhere in the scripting by typing GameManager.instance
         public static GameManager instance { get; private set; }
 
@@ -88,12 +99,16 @@ namespace Assets.Scripts
                     break;
 
                 case Game.State.gamePausing:
+                    GamePaused();
                     break;
 
                 case Game.State.gameUnPausing:
+                    GameUnPaused();
+                    SetTargetState(Game.State.gamePlaying);
                     break;
 
                 case Game.State.restarting:
+                    Restarting();
                     break;
             }
             currentGameState = targetGameState;
@@ -110,7 +125,7 @@ namespace Assets.Scripts
 
         private void EndGame()
         {
-            throw new NotImplementedException();
+            
         }
 
 

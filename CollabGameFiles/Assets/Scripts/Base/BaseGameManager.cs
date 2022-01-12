@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 namespace Assets.Scripts
 {
@@ -12,6 +14,8 @@ namespace Assets.Scripts
         public Game.State currentGameState;
         public Game.State targetGameState;
         public Game.State lastGameState;
+
+        public bool paused;
 
         //private bool Paused;
 
@@ -64,12 +68,24 @@ namespace Assets.Scripts
 
         public virtual void GamePlaying() { OnGamePlaying.Invoke(); }
 
-        public virtual void GameEnded() { OnGameEnded.Invoke(); }
+        public virtual void GameEnded() 
+        {
+#if UNITY_EDITOR
+            EditorApplication.ExitPlaymode();
+#else
+        Application.Quit();
+#endif
+        }
 
         public virtual void GamePausing() { OnGamePausing.Invoke(); }
         public virtual void GameUnPausing() { OnGameUnPaused.Invoke(); }
 
-        public virtual void Restarting() { OnRestarting.Invoke(); }
+        public virtual void Restarting() 
+        {
+            var thisScene = SceneManager.GetActiveScene();
+            SceneManager.LoadScene(thisScene.name); 
+            OnRestarting.Invoke(); 
+        }
 
 
         public virtual void UpdateTargetState()
@@ -140,18 +156,23 @@ namespace Assets.Scripts
                     break;
 
                 case Game.State.gamePausing:
+                    
                     break;
 
                 case Game.State.gameUnPausing:
+
                     break;
 
                 case Game.State.restarting:
+
                     break;
             }
         }
 
         public virtual void GamePaused()
         {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
             OnGamePausing.Invoke();
             Paused = true;
         }
@@ -160,19 +181,21 @@ namespace Assets.Scripts
         {
             OnGameUnPaused.Invoke();
             Paused = false;
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
         }
 
         public bool Paused
         {
             get
             {
-                return Paused;
+                return paused;
             }
             set
             {
-                Paused = value;
+                paused = value;
 
-                if (Paused)
+                if (paused)
                 {
                     Time.timeScale = 0f;
                 }
